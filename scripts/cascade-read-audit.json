@@ -1,0 +1,5 @@
+[
+  { "id": "world-format", "task": "Read src/core/types.ts and identify the saved world document schema. Report fields and file references. Do not modify files." },
+  { "id": "evidence", "task": "Read src/core and identify where claims distinguish facts, assumptions and simulation outputs. Report paths and missing validation. Do not modify files." },
+  { "id": "review", "task": "Review src/core for consistency between saved world schema and evidence representation. Report concrete issues with file references. Do not modify files.", "depends_on": ["world-format", "evidence"] }
+]
