@@ -1,0 +1,5 @@
+{
+  "name": "elsewhere", "version": "0.1.0", "private": true, "type": "module",
+  "scripts": {"dev":"vite --host 127.0.0.1", "build":"tsc -b && vite build", "typecheck":"tsc --noEmit", "test":"vitest run", "test:e2e":"playwright test", "preview":"vite preview --host 127.0.0.1", "lint":"eslint src", "check":"npm run typecheck && npm run lint && npm test && npm run build"},
+  "dependencies": {}, "devDependencies": {}
+}
