@@ -1,5 +1,5 @@
 import { getDefinition, validateParameters, validateTime } from './definitions';
-import type { Command, Parameters, WorldKind } from './types';
+import type { Command, Parameters, WorldDefinition, WorldKind } from './types';
 
 const normalize = (text: string) => text.toLowerCase().replace(/[_-]/g, ' ').replace(/\s+/g, ' ').trim();
 const aliases: Record<WorldKind, Record<string, string[]>> = {
@@ -10,10 +10,11 @@ const aliases: Record<WorldKind, Record<string, string[]>> = {
   },
   neural: { learningRate: ['learning rate', 'rate'], hiddenWidth: ['hidden width', 'hidden neurons', 'neurons', 'width'], seed: ['seed', 'random seed'] },
   semiconductor: { demandShock: ['demand', 'demand shock', 'demand increase'], fabCapacity: ['fab capacity', 'fab capacity expansion', 'fabrication capacity'], exportRestriction: ['export restriction', 'exports', 'trade restriction'], inventoryBuffer: ['inventory', 'inventory buffer', 'initial inventory'] },
+  system: { inputPressure: ['input', 'input pressure', 'resource pressure'], systemCapacity: ['capacity', 'system capacity'], constraintPressure: ['constraint', 'constraint pressure', 'disruption'] },
 };
 
-export function interpretCommand(text: string, kind: WorldKind): Command {
-  const definition = getDefinition(kind);
+export function interpretCommand(text: string, kind: WorldKind, definitionOverride?:WorldDefinition): Command {
+  const definition = definitionOverride??getDefinition(kind);
   const unknown = (message: string): Command => ({ type: 'unknown', message });
   if (typeof text !== 'string' || !text.trim() || text.length > 1000) return unknown('Enter a command of 1–1,000 characters.');
   const normalized = normalize(text).replace(/[?.!]+$/, '').trim();
@@ -31,6 +32,7 @@ export function interpretCommand(text: string, kind: WorldKind): Command {
       manhattan: { uptown: 'uptown', midtown: 'midtown', downtown: 'downtown', brooklyn: 'brooklyn', queens: 'queens', bronx: 'bronx', 'the bronx': 'bronx', jersey: 'jersey', 'new jersey': 'jersey', transit: 'transit', freight: 'freight', 'public space': 'public-space' },
       neural: { 'input 0': 'input-0', 'input 1': 'input-1', 'output': 'output-0', 'output 0': 'output-0' },
       semiconductor: { design: 'design', materials: 'materials', fabrication: 'fabrication', packaging: 'packaging', shipping: 'shipping', distribution: 'shipping', demand: 'demand', inventory: 'inventory' },
+      system: {},
     };
     const id = nodes[kind][focus[1]];
     if (id) return { type: 'focus', nodeId: id };
@@ -47,7 +49,7 @@ export function interpretCommand(text: string, kind: WorldKind): Command {
     const match = fragment.match(/^(?:set |change |make )?(.+?)\s*(?:=| to |\s)\s*(-?\d+(?:\.\d+)?)(?:\s*(?:%|percent|neurons?|months?))?$/);
     if (!match) return unknown(`Unrecognized command. Try “set ${definition.variables[0].label.toLowerCase()} to ${definition.variables[0].initial}”, “time ${definition.time.initial}”, “branch”, or “evidence”.`);
     const name = normalize(match[1]);
-    const variable = definition.variables.find((v) => normalize(v.id) === name || normalize(v.label) === name || aliases[kind][v.id].includes(name));
+    const variable = definition.variables.find((v) => normalize(v.id) === name || normalize(v.label) === name || aliases[kind][v.id]?.includes(name));
     if (!variable) return unknown(`Unknown parameter “${match[1]}”. Available controls: ${definition.variables.map((v) => v.label).join(', ')}.`);
     if (Object.hasOwn(values, variable.id)) return unknown(`Specify ${variable.label} only once per command.`);
     values[variable.id] = Number(match[2]);

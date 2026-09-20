@@ -1,6 +1,6 @@
 # What is distinctive about Elsewhere?
 
-Elsewhere combines spatial educational simulations with inspectable assumptions, reproducible branches, and a portable `.elsewhere` document. The distinction is the complete workflow: ask a supported question, manipulate a world, compare a frozen alternative, and inspect why an outcome changed. Interactive learning, visual causal models, and neural-network playgrounds have substantial prior art.
+Elsewhere combines spatial educational simulations with bounded research, inspectable assumptions, reproducible branches, walk-through navigation, and a portable `.elsewhere` document. The distinction is the complete workflow: ask about a connected system, enter and manipulate a world, compare a frozen alternative, and inspect why an outcome changed. Interactive learning, visual causal models, procedural 3D worlds, and neural-network playgrounds have substantial prior art.
 
 ## Closest precedents
 
@@ -18,13 +18,13 @@ Sources checked September 20, 2026. The right column is an interpretation of Els
 
 The potentially distinctive combination is:
 
-1. A versioned `.elsewhere` document captures supported world identity, parameters, time, branch state, and history so an experiment can be reopened.
-2. The reality compiler interprets a supported question into an authored model with sources, assumptions and simulation outputs distinguished explicitly.
-3. Spatial manipulation and causal ripple make parameter changes visible while numerical outputs remain inspectable.
+1. A versioned `.elsewhere` document captures world identity, a strictly validated generated blueprint when needed, parameters, time, branch state, and history so an experiment can be reopened.
+2. The reality compiler routes an authored match directly or maps another question through bounded public context and a disclosed archetype, while separating sources, assumptions, and simulation outputs.
+3. Overview and human-scale walk-through modes share one current simulation; spatial manipulation and causal ripple make changes visible while numerical outputs remain inspectable.
 4. A frozen branch and timeline comparison retain the alternative being tested.
 5. WHY and challenge surfaces expose the model's explanation and limitations, encouraging users to question the representation.
 
-The current scope is three authored educational domains: Manhattan density, neural learning, and semiconductor supply chains. The compiler does not research an arbitrary question, discover a scientifically valid model from unrestricted prose, or generate a validated simulation of any reality. The `.elsewhere` extension is a project format, not an established open standard. A document is reproducible within compatible versions of the corresponding authored model; it is not a self-contained general-purpose executable.
+The current scope includes three authored educational domains plus generic archetypes for companies, finance, supply chains, CPUs, the internet, science, history, energy, ecosystems, and other systems. The compiler can retrieve context for an arbitrary question, but it does not discover a scientifically valid causal model from unrestricted prose or turn public context into calibrated coefficients. Generated worlds are explicit exploratory hypotheses. The `.elsewhere` extension is a project format, not an established open standard, and imported documents remain data rather than general-purpose executables.
 
 ## How to test the differentiation
 

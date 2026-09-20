@@ -2,6 +2,7 @@
 .world-scene-host,.world-scene-canvas,.world-scene-fallback{position:absolute;inset:0;width:100%;height:100%;display:block}
 .world-scene-canvas{cursor:grab;touch-action:none;outline-offset:-4px}
 .world-scene-canvas:active{cursor:grabbing}
+.world-scene--walking .world-scene-canvas{cursor:crosshair}
 .world-scene--flat .world-scene-host{visibility:hidden;pointer-events:none}
 .world-scene button,.world-scene summary{font:inherit;touch-action:manipulation}
 .world-scene button:focus-visible,.world-scene summary:focus-visible,.world-scene-canvas:focus-visible,.world-scene-svg-node:focus-visible{outline:2px solid var(--scene-accent);outline-offset:3px}
@@ -11,6 +12,7 @@
 .world-scene-camera button{width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:var(--scene-muted);border-radius:4px;cursor:pointer;transition:background .14s,color .14s}
 .world-scene-camera button:hover{background:#233035;color:var(--scene-accent)}
 .world-scene-camera button:active{background:#324139}
+.world-scene-camera button.is-active{background:#34462f;color:var(--scene-accent)}
 .world-scene-camera .world-scene-view-switch{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--scene-text)}
 .world-scene-node-menu{position:relative;flex-shrink:0}
 .world-scene-node-menu summary{height:50px;display:flex;align-items:center;gap:8px;padding:0 13px;cursor:pointer;list-style:none;font-size:12px;white-space:nowrap}
@@ -30,6 +32,13 @@
 .world-scene-svg-node{cursor:pointer;outline:none}
 .world-scene-svg-node:focus-visible circle:first-child{stroke:var(--scene-accent);stroke-width:5px}
 .world-scene-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.world-scene-walk-hud{position:absolute;left:20px;bottom:20px;z-index:4;display:grid;gap:5px;padding:12px 14px;border:1px solid #526351;background:#0d171be8;color:var(--scene-text);box-shadow:0 12px 40px #0006;pointer-events:none}
+.world-scene-walk-hud>span{display:flex;align-items:center;gap:8px;font:10px 'IBM Plex Mono',monospace;color:var(--scene-accent);letter-spacing:.08em}
+.world-scene-walk-hud>small{font:8px/1.6 'IBM Plex Mono',monospace;color:var(--scene-muted)}
+.world-scene-dpad{display:none;grid-template-columns:repeat(4,42px);gap:3px;margin-top:5px;pointer-events:auto}
+.world-scene-dpad button{height:40px;border:1px solid var(--scene-border);background:#1b292d;color:var(--scene-text);border-radius:3px}
+.world-scene-dpad button:active{background:#40513c;color:var(--scene-accent)}
 @media(max-width:719px){.world-scene{min-height:350px}.world-scene-tools{right:12px;bottom:12px;max-width:calc(100% - 24px);gap:7px}.world-scene-camera{gap:0;padding:2px}.world-scene-camera button{width:40px;height:44px}.world-scene-node-menu summary{height:48px;padding:0 9px;gap:5px}.world-scene-node-count{display:none}.world-scene-label{font-size:9px!important;padding:4px 5px}.world-scene-node-list{right:auto;left:0;width:min(260px,calc(100vw - 40px))}}
 @media(max-width:419px){.world-scene-tools{flex-wrap:wrap}.world-scene-camera button{width:38px}.world-scene-node-menu summary{padding:0 8px}.world-scene-node-menu summary span:not(.world-scene-node-count){font-size:11px}}
+@media(max-width:719px){.world-scene--walking .world-scene-tools{bottom:106px}.world-scene-walk-hud{left:12px;right:12px;bottom:10px;padding:9px 11px}.world-scene-walk-hud>small{display:none}.world-scene-dpad{display:grid;grid-template-columns:repeat(4,1fr)}.world-scene-dpad button{height:42px}}
 @media(prefers-reduced-motion:reduce){.world-scene button,.world-scene-label{transition:none}}

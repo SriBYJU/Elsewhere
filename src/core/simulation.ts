@@ -1,7 +1,7 @@
 import { deepFreeze, validateParameters, validateTime } from './definitions';
-import type { Metric, Parameters, SimulationResult, WorldKind, WorldNode } from './types';
+import { simulateBlueprint } from './universal';
+import type { Metric, Parameters, SimulationResult, SystemBlueprint, WorldKind, WorldNode } from './types';
 
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const metric = (id: string, label: string, value: number, unit: string, range: [number, number], explanation: string, equation: string, inputs: string[], claimIds: string[], good: Metric['good'] = 'neutral'): Metric =>
   ({ id, label, value, unit, range, explanation, equation, inputs, claimIds, good });
 const node = (id: string, label: string, value: number, position: [number, number, number], kind: string, detail: string, claimIds: string[]): WorldNode =>
@@ -218,10 +218,11 @@ function semiconductor(p: Parameters, time: number): SimulationResult {
 }
 
 /** Pure local model evaluation. Invalid inputs fail rather than being silently clamped. */
-export function simulate(kind: WorldKind, parameters: Parameters, time: number): SimulationResult {
+export function simulate(kind: WorldKind, parameters: Parameters, time: number, blueprint?: SystemBlueprint): SimulationResult {
   validateParameters(kind, parameters);
   validateTime(kind, time);
-  const result = kind === 'manhattan' ? manhattan(parameters, time) : kind === 'neural' ? neural(parameters, time) : semiconductor(parameters, time);
+  if(kind==='system'&&!blueprint)throw new Error('Generated worlds require a validated system blueprint.');
+  const result = kind === 'manhattan' ? manhattan(parameters, time) : kind === 'neural' ? neural(parameters, time) : kind === 'semiconductor' ? semiconductor(parameters, time) : simulateBlueprint(blueprint!,parameters,time);
   // Numerical failures must never be presented as plausible scenario outputs.
   if (result.metrics.some((m) => !Number.isFinite(m.value)) || result.nodes.some((n) => !Number.isFinite(n.value))) throw new Error('The model produced a non-finite result.');
   return result;

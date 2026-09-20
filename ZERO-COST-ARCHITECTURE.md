@@ -7,13 +7,13 @@ Elsewhere's core experience runs as a static browser application. Authored data,
 | Layer | Execution | Required hosted service |
 | --- | --- | --- |
 | Interface and spatial rendering | Bundled browser JavaScript, HTML and CSS | Static file hosting |
-| Supported question interpretation | Local deterministic routing into authored worlds | None |
+| Question interpretation | Local deterministic routing into authored worlds or a disclosed system archetype | None |
 | Simulations and causal explanations | Local functions over documented parameters | None |
 | Saved worlds and branches | Browser storage and user-downloaded `.elsewhere` files | None |
-| Sources and evidence labels | Curated content bundled with each world | None for the simulation; opening a source visits its publisher |
+| Sources and evidence labels | Curated authored sources plus optional bounded Wikipedia context for generated worlds | Wikipedia is optional; research failure produces an explicit offline world |
 | Build, tests and Cascade | Developer machine or repository CI | None for deterministic work; optional model execution has separate requirements |
 
-Local browser storage can be cleared or unavailable. Downloaded world files are the portable backup. A static host serves the application; it does not receive an uploaded saved world merely because the app imports one. Avoid adding telemetry, API-backed generation, remote fonts, or external asset dependencies without revisiting these boundaries.
+Local browser storage can be cleared or unavailable. Downloaded world files are the portable backup. A static host serves the application; it does not receive an uploaded saved world merely because the app imports one. Generated-world research sends the entered question to Wikipedia's public API; the interface discloses the research stage and continues offline when it fails. Avoid adding telemetry, paid API-backed generation, remote fonts, or external asset dependencies without revisiting these boundaries.
 
 ## Free public educational deployment
 
@@ -35,4 +35,4 @@ Planning and shadow routing do not execute a model. Model-backed development is 
 
 [WebLLM](https://webllm.mlc.ai/docs/) provides language-model inference in the browser with WebGPU and worker support. It is a possible future optional interpreter for questions, not a dependency of this release. A suitable implementation would explicitly request the model download, disclose download size and hardware requirements, and keep deterministic examples available when the browser lacks the required GPU features or resources.
 
-Any proposed parameters from a local model must still pass the existing world schema, bounds and provenance rules. A language model cannot promote an invented source to a fact or expand the supported simulation domains merely by describing them. Model files, licenses, download hosting, memory use, latency and mobile support require a separate measured evaluation. No local-AI performance, compatibility, or privacy guarantee has been established by this investigation.
+Any proposed parameters from a local model must still pass the existing world schema, bounds and provenance rules. A language model could propose a blueprint only after a future contract and evidence review; it could not promote an invented source to fact or remove the current assumption labels. Model files, licenses, download hosting, memory use, latency and mobile support require a separate measured evaluation. No local-AI performance, compatibility, or privacy guarantee has been established by this investigation.

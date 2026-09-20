@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Parameters, SimulationResult, WorldKind, WorldNode } from '../../core/types';
+import type { Parameters, SimulationResult, SystemBlueprint, WorldKind, WorldNode } from '../../core/types';
 
 export const SCENE_COLORS = { ocean: '#090f13', slate: '#536967', lime: '#d1ec9c', cyan: '#85ccdb', amber: '#eab878', rose: '#ec9a9a' };
 export interface SceneEnvironment { group: THREE.Group; animate: (time: number, parameters: Parameters) => void }
@@ -180,8 +180,32 @@ function manhattanEnvironment(): SceneEnvironment {
   return {group,animate};
 }
 
-export function buildEnvironment(kind:WorldKind,mode:'world'|'model'):SceneEnvironment {
+function systemEnvironment(blueprint?:SystemBlueprint):SceneEnvironment {
+  const group=new THREE.Group(),archetype=blueprint?.archetype??'general';
+  const groundColors:Record<string,string>={ecosystem:'#1d392c',energy:'#26352d',cpu:'#102b2f',internet:'#152a34',history:'#302c26',company:'#243033',finance:'#202c30','supply-chain':'#2e3029',science:'#202b35',general:'#202e30'};
+  const ground=new THREE.Mesh(new THREE.BoxGeometry(22,.28,17),new THREE.MeshStandardMaterial({color:groundColors[archetype]??groundColors.general,roughness:.82,metalness:archetype==='cpu'?.42:.08}));
+  ground.position.y=-.52;group.add(ground);
+  const grid=new THREE.GridHelper(22,22,archetype==='ecosystem'?'#527652':'#557472','#293f40');grid.position.y=-.36;grid.scale.z=.77;group.add(grid);
+  const points=new Map((blueprint?.nodes??[]).map(node=>[node.id,new THREE.Vector3(node.position[0]*1.7,-.3,node.position[2]*1.8)]));
+  blueprint?.edges.forEach(edge=>{const start=points.get(edge.from),end=points.get(edge.to);if(start&&end)group.add(line([start,end],edge.polarity<0?SCENE_COLORS.amber:SCENE_COLORS.cyan,.28,true));});
+  const random=seeded((blueprint?.subject.length??19)*7919);
+  if(archetype==='ecosystem'){
+    const crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.38,1),new THREE.MeshStandardMaterial({color:'#557a4b',roughness:1}),70),dummy=new THREE.Object3D();
+    for(let i=0;i<70;i++){const x=-10+random()*20,z=-7.5+random()*15;dummy.position.set(x,.05+random()*.35,z);dummy.scale.setScalar(.5+random()*.85);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);}group.add(crowns);
+  }
+  if(archetype==='cpu'){
+    for(let i=-8;i<=8;i+=2){group.add(line([new THREE.Vector3(i,-.3,-7),new THREE.Vector3(i,-.3,7)],i%4?SCENE_COLORS.cyan:SCENE_COLORS.lime,.24));}
+    for(let i=-6;i<=6;i+=2){group.add(line([new THREE.Vector3(-10,-.3,i),new THREE.Vector3(10,-.3,i)],SCENE_COLORS.cyan,.18));}
+  }
+  if(archetype==='energy'){
+    for(let i=0;i<7;i++){const mast=new THREE.Mesh(new THREE.CylinderGeometry(.05,.08,2.2,8),new THREE.MeshStandardMaterial({color:'#84948a',metalness:.45}));mast.position.set(-8+i*2.7,.75,-6+(i%2)*1.2);group.add(mast);const rotor=new THREE.Mesh(new THREE.TorusGeometry(.55,.025,4,20),new THREE.MeshBasicMaterial({color:SCENE_COLORS.lime}));rotor.position.set(mast.position.x,1.7,mast.position.z);rotor.rotation.y=Math.PI/2;group.add(rotor);}
+  }
+  return {group,animate:()=>undefined};
+}
+
+export function buildEnvironment(kind:WorldKind,mode:'world'|'model',blueprint?:SystemBlueprint):SceneEnvironment {
   if(kind==='manhattan'&&mode==='world') return manhattanEnvironment();
+  if(kind==='system'&&mode==='world')return systemEnvironment(blueprint);
   const group=new THREE.Group();
   if(kind==='semiconductor'&&mode==='world') {
     const substrate=new THREE.Mesh(new THREE.BoxGeometry(20,.4,12),new THREE.MeshStandardMaterial({color:'#172d2e',roughness:.55,metalness:.25}));
@@ -232,9 +256,10 @@ export function buildData(kind:WorldKind,mode:'world'|'model',result?:Simulation
   result.nodes.forEach(node=>{
     const position=positions.get(node.id)!;
     const activation=kind==='neural'?Math.max(0,Math.min(1,node.value)):.5;
-    const size=city?.17:kind==='neural'?.25+activation*.22:.43;
+    const size=city?.17:kind==='neural'?.25+activation*.22:kind==='system'?.68:.43;
     const color=kind==='neural'?new THREE.Color(SCENE_COLORS.cyan).lerp(new THREE.Color(SCENE_COLORS.lime),activation):new THREE.Color(SCENE_COLORS.cyan);
-    const geometry=kind==='semiconductor'&&mode==='world'?new THREE.BoxGeometry(size*2,.35+Math.min(3,Math.abs(node.value)/70),size*2):new THREE.SphereGeometry(size,20,14);
+    const systemGeometry=()=>node.kind==='constraint'?new THREE.OctahedronGeometry(size,0):node.kind==='buffer'||node.kind==='stock'?new THREE.CylinderGeometry(size*.82,size,1.3,16):node.kind==='process'||node.kind==='flow'?new THREE.BoxGeometry(size*1.8,1.2,size*1.8):node.kind==='output'?new THREE.ConeGeometry(size,1.5,18):new THREE.DodecahedronGeometry(size,0);
+    const geometry=kind==='semiconductor'&&mode==='world'?new THREE.BoxGeometry(size*2,.35+Math.min(3,Math.abs(node.value)/70),size*2):kind==='system'&&mode==='world'?systemGeometry():new THREE.SphereGeometry(size,20,14);
     const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:city?.65:.22,roughness:.36,metalness:.3}));
     mesh.position.copy(position);mesh.userData.nodeId=node.id;group.add(mesh);nodes.set(node.id,mesh);
     const ring=new THREE.Mesh(new THREE.TorusGeometry(size+ .17,.025,6,40),new THREE.MeshBasicMaterial({color:SCENE_COLORS.lime,transparent:true,opacity:.9}));

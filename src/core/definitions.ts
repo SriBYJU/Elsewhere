@@ -79,6 +79,24 @@ export const definitions: WorldDefinition[] = deepFreeze([
     time: { label: 'Months after shock', unit: 'months', min: 0, max: 36, step: 1, initial: 12, events: [{ at: 0, label: 'Opening inventory' }, { at: 1, label: 'Demand and trade shock' }, { at: 18, label: 'Fab-build timescale' }, { at: 36, label: 'Scenario horizon' }] },
     limitations: ['Normalized units, authored capacities, and generic trade friction; no live production or market data.', 'The network is schematic and does not attribute output to countries or companies.', 'No prices, yields, product substitution, transport delays, or facility-level build schedules are modeled.', 'The backlog-based delay proxy is not a delivery-date prediction.'],
   },
+  {
+    id: 'system', title: 'Build any complex system', subtitle: 'Ask a question. Enter its connections.',
+    description: 'Turn a question about a company, market, CPU, network, scientific process, historical event, energy system, ecosystem, or another complex system into a navigable causal world.',
+    question: 'How does a rainforest ecosystem respond to prolonged drought?', category: 'Universal world compiler', coordinates: 'Any place · any connected system',
+    variables: [
+      variable('inputPressure', 'Input pressure', -100, 100, 1, 0, '%', 'Shift the primary input or starting condition around its normalized baseline.', ['system-assumptions']),
+      variable('systemCapacity', 'System capacity', -100, 100, 1, 0, '%', 'Shift the capacity of the central transformation or network.', ['system-assumptions']),
+      variable('constraintPressure', 'Constraint pressure', -100, 100, 1, 0, '%', 'Shift the dominant constraint or disruption around its normalized baseline.', ['system-assumptions']),
+    ],
+    sources: [],
+    claims: [
+      claim('system-context', 'Public references describe topic context', 'fact', 'When live research succeeds, Source DNA links to public topic pages used to orient the system map.', [], 'Context sources do not validate generated causal links or effect sizes.'),
+      claim('system-assumptions', 'Connections are explicit hypotheses', 'assumption', 'Nodes and links come from a reusable system archetype selected from the question. Their direction, strength, and delay are visible modeling assumptions.'),
+      claim('system-output', 'The world computes a bounded scenario', 'simulation', 'Each node begins at index 100. Interventions and three damped causal passes produce repeatable comparison values.', [], 'Outputs are exploratory indices, not observations or forecasts.'),
+    ],
+    time: { label: 'Scenario step', unit: 'steps', min: 0, max: 24, step: 1, initial: 12, events: [{ at: 0, label: 'Baseline' }, { at: 6, label: 'Early effects' }, { at: 12, label: 'Developed scenario' }, { at: 24, label: 'Scenario horizon' }] },
+    limitations: ['The generated world is a starting hypothesis that may omit essential entities or competing causal accounts.', 'Reference retrieval supplies context only; it does not calibrate the simulation.', 'All values are normalized indices and all sensitivities are generic.', 'Use Source DNA, X-ray, Why, and Challenge before drawing conclusions.'],
+  },
 ]);
 
 export function getDefinition(kind: WorldKind): WorldDefinition {
