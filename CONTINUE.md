@@ -25,7 +25,10 @@ Updated: 2026-09-20
 
 - Remote: `https://github.com/SriBYJU/Elsewhere.git`
 - Stable foundation already pushed: `8234619e75f61cf19dc9b539c4bf769f0388bfe0`
-- Push the current verified commits, enable Pages with GitHub Actions, then verify the public URL and a direct-route reload before declaring deployment complete.
+- Pages uses GitHub Actions and is live at `https://sribyju.github.io/Elsewhere/`.
+- Deployment workflow run `35534075822` completed both build and deploy jobs successfully for commit `7bf8b77ecb5bc9a97aa629ac144f3b3f6c5c5d1c`.
+- Live HTML and its hashed production JavaScript asset returned HTTP 200 with the `/Elsewhere/` base path on 2026-09-20.
+- The full public-site Playwright run completed with 9 passing tests and 1 intentional duplicate visual-project skip across desktop and mobile profiles.
 
 ## Provenance
 
