@@ -41,7 +41,7 @@ test('researches an arbitrary CPU question and lets the visitor enter and inspec
   const enter=page.getByRole('button',{name:/enter and walk through world/i});
   await expect(enter).toBeVisible();
   await enter.click();
-  await expect(page.getByText('ENTERED WORLD')).toBeVisible();
+  await expect(page.getByText('EXPLORATION MODE')).toBeVisible();
   await page.locator('canvas').press('w');
   await page.locator('summary').filter({hasText:'Nodes'}).click();
   await page.getByRole('button',{name:/Fetch & predict/}).click();

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { deepFreeze, definitions, getDefinition, validateParameters, validateTime } from './definitions';
 import { simulate } from './simulation';
-import { buildSystemBlueprint, definitionFromBlueprint, researchQuestion } from './universal';
+import { buildSystemBlueprint, definitionFromBlueprint, hasHistoricalIntent, researchQuestion } from './universal';
 import type { Branch, CompileResult, Parameters, WorldDocument, WorldKind } from './types';
 
 const MAX_BYTES = 1024 * 1024;
@@ -103,14 +103,17 @@ export function compileWorld(question: string, forcedKind?: WorldKind): CompileR
   const matches = definitions.filter((definition) => definition.id!=='system'&&(() => {
     if (definition.id === 'neural') return /\b(neural|neuron|xor|backpropagation|learning rate|machine learning)\b/.test(lower);
     if (definition.id === 'semiconductor') return /\b(semiconductor|chip|chips|wafer|fabrication|fab)\b/.test(lower);
-    return /\b(manhattan|nyc|new york|traffic|transit|cars?|streets?)\b/.test(lower);
+    // Transport words alone do not identify this location-specific authored model.
+    return /\b(manhattan|nyc|new york(?: city)?)\b/.test(lower);
   })());
-  const kind = forcedKind ?? (matches.length === 1 ? matches[0].id : 'system');
+  const historical=hasHistoricalIntent(cleanQuestion);
+  const kind = forcedKind ?? (!historical&&matches.length === 1 ? matches[0].id : 'system');
   const blueprint=kind==='system'?buildSystemBlueprint(cleanQuestion):undefined;
   const definition = blueprint?definitionFromBlueprint(cleanQuestion,blueprint):getDefinition(kind);
   const parameters = Object.fromEntries(definition.variables.map((v) => [v.id, v.initial]));
   const notices = kind==='system'?['Built an exploratory system map from a reusable archetype. Causal links and sensitivities are disclosed assumptions, not researched facts.']:['Runs a precompiled educational model locally. The question does not generate or validate new causal equations.'];
   if (!forcedKind && matches.length !== 1) notices.push(matches.length === 0 ? 'No authored model matched, so Elsewhere built a question-specific universal system world.' : 'Several authored topics matched, so Elsewhere built a neutral universal system world.');
+  if(!forcedKind&&historical)notices.push('Interpreted the requested historical setting before selecting a contemporary authored model. The historical world remains illustrative.');
   if (forcedKind) notices.push(`Using the explicitly selected ${definition.title} model.`);
   // Only this narrow, reviewable phrase changes a starting parameter.
   if (kind === 'manhattan') {
@@ -129,7 +132,7 @@ export function compileWorld(question: string, forcedKind?: WorldKind): CompileR
   return {
     world, definition, route: kind==='system'?'deterministic':'precompiled', notices,
     stages: [
-      { name: 'Interpret', detail: forcedKind ? 'Selected the requested world.' : matches.length === 1 ? 'Matched the question to an authored model.' : `Classified a ${blueprint?.archetype??'known'} connected system.`, count: 1 },
+      { name: 'Interpret', detail: forcedKind ? 'Selected the requested world.' : kind!=='system' ? 'Matched the question to an authored model.' : `Classified a ${blueprint?.archetype??'known'} connected system.`, count: 1 },
       { name: 'Assemble', detail: kind==='system'?'Created entities, flows, constraints, feedback, and intervention points.':'Loaded fixed model variables and explicitly typed claims.', count: definition.variables.length },
       { name: 'Ground', detail: kind==='system'?'Prepared the world for public context research; assumptions remain separate.':'Attached curated reference sources; no live retrieval or empirical fitting occurs during compilation.', count: definition.sources.length },
       { name: 'Simulate', detail: kind === 'neural' ? 'Ran seeded gradient descent and evaluated actual activations.' : 'Evaluated the documented deterministic scenario.', count: result.nodes.length },

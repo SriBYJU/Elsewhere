@@ -5,3 +5,24 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 @media(max-width:1100px) and (min-width:721px){.discover-strip>div{grid-template-columns:repeat(2,1fr)}.discover-strip button:nth-child(2){border-right:0}.discover-strip button{border-bottom:1px solid var(--border)}}
+
+.immersive-toggle{position:absolute;top:76px;right:24px;z-index:6;display:flex;align-items:center;gap:8px;min-height:44px;padding:10px 14px;border:1px solid #a7b9b650;border-radius:8px;background:#0a151cdd;backdrop-filter:blur(12px);color:#f3f6f0;font-size:12px;box-shadow:0 6px 24px #0003}
+.explorer--immersive{position:fixed;inset:0;z-index:30;background:#071015}
+.explorer--immersive>.world-topbar,.explorer--immersive>.timeline,.explorer--immersive>.inspector,.explorer--immersive>.comparison,.explorer--immersive>.command-bar,.explorer--immersive>.demo-banner{display:none}
+.explorer--immersive>.workspace{display:block;height:100%;border:0}
+.explorer--immersive .control-rail,.explorer--immersive .scene-caption,.explorer--immersive .metrics-strip{display:none}
+.explorer--immersive .world-canvas-area{height:100%;min-height:0;border:0}
+.explorer--immersive .world-scene{height:100%;min-height:0!important}
+.explorer--immersive .scene-toolbar{right:200px}
+.explorer--immersive .scene-badge{display:none}
+.explorer--immersive .immersive-toggle{top:max(20px,env(safe-area-inset-top));right:max(20px,env(safe-area-inset-right))}
+@media(max-width:720px){.immersive-toggle{right:16px;top:77px;font-size:11px}.explorer--immersive .immersive-toggle{right:12px;top:76px}.explorer--immersive .scene-toolbar{right:0}.explorer--immersive .world-canvas-area{min-height:0}}
+
+.world-object-card{position:absolute;top:105px;right:22px;z-index:7;width:min(320px,calc(100% - 36px));padding:18px 20px;background:#0b171fee;backdrop-filter:blur(16px);border:1px solid #93b7a855;border-radius:12px;box-shadow:0 14px 50px #0006}
+.world-object-card>div{display:flex;justify-content:space-between;align-items:center;gap:12px}.world-object-card h2{font-size:23px;margin:4px 0 12px}.world-object-card p{font-size:13px}.world-object-card>.fine-print{display:block}.world-object-card>.text-action{font-size:12px;margin-top:12px;color:var(--accent)}
+@media(max-width:720px){.world-object-card{top:132px;right:12px;padding:12px 16px;max-height:calc(100% - 300px);overflow:auto}.world-object-card h2{font-size:20px}.world-object-card p{font-size:12px}}
+
+.world-canvas-area .world-scene-objective{top:86px}
+.world-canvas-area .world-scene-minimap{top:134px}
+.explorer--immersive .world-scene-minimap{top:86px}
+@media(max-width:719px){.world-canvas-area .world-scene-objective{top:77px;width:180px}.world-canvas-area .world-scene-minimap{top:130px}.explorer--immersive .world-scene-minimap{top:130px}.world-canvas-area .world-scene-compass{top:230px}}

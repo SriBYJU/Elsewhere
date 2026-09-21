@@ -18,6 +18,6 @@ test('captures desktop, tablet, mobile, and entered-world audit views without ho
   await page.getByRole('button',{name:'Compile world'}).click();
   await page.getByRole('button',{name:/enter elsewhere/i}).click();
   await page.getByRole('button',{name:/enter and walk through world/i}).click();
-  await expect(page.getByText('ENTERED WORLD')).toBeVisible();
+  await expect(page.getByText('EXPLORATION MODE')).toBeVisible();
   await page.screenshot({path:testInfo.outputPath('cpu-entered-world.png'),fullPage:true});
 });
