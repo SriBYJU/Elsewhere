@@ -8,8 +8,9 @@ const enter = async (page: Page) => {
   await expect(page.locator('canvas')).toHaveAttribute('data-position', /,/);
 };
 
-test('play opens on foot; movement, stationary jumping, and wall collision work', async ({ page }) => {
-  test.setTimeout(60000);
+test('play opens on foot; movement, stationary jumping, and wall collision work', async ({ page, isMobile }) => {
+  test.setTimeout(90000);
+  if(!isMobile)await page.setViewportSize({width:800,height:600});
   await enter(page);
   const canvas = page.locator('canvas');
   const start = await position(page);
@@ -30,7 +31,7 @@ test('play opens on foot; movement, stationary jumping, and wall collision work'
   finally { await page.keyboard.up('w'); }
   await page.keyboard.down('a');
   try {
-    await expect.poll(async () => (await position(page))[0]).toBeLessThan(start[0] - .07);
+    await expect.poll(async () => (await position(page))[0], {timeout:20000}).toBeLessThan(start[0] - .3);
     await page.waitForTimeout(650);
     expect((await position(page))[0]).toBeGreaterThan(1.8);
   } finally { await page.keyboard.up('a'); }
@@ -68,4 +69,16 @@ test('held on-screen movement stops on release and node menu stays inside scene'
   const scene = (await page.locator('.world-scene').boundingBox())!;
   expect(list.y).toBeGreaterThanOrEqual(scene.y);
 
+});
+
+test('a street-level target opens its evidence card from the crosshair', async ({ page }) => {
+  await enter(page);
+  await expect(page.locator('.world-scene-interact')).toContainText('Inspect Transit network');
+  await page.locator('canvas').focus();
+  await page.keyboard.press('e');
+  const card = page.getByRole('complementary', {name:'Inspected place'});
+  await expect(card.getByRole('heading', {name:'Transit network',exact:true})).toBeVisible();
+  await card.getByRole('button', {name:'Inspect causes and evidence'}).click();
+  await expect(page.locator('.explorer--immersive')).toHaveCount(0);
+  await expect(page.getByRole('tab', {name:'Source DNA'})).toBeVisible();
 });

@@ -102,9 +102,11 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure=1.05;
-    renderer.shadowMap.enabled=!decorative;renderer.shadowMap.type=THREE.PCFShadowMap;
+    const gl=renderer.getContext(),rendererInfo=gl.getExtension('WEBGL_debug_renderer_info');
+    const softwareGraphics=rendererInfo?/swiftshader|llvmpipe|software|microsoft basic/i.test(String(gl.getParameter(rendererInfo.UNMASKED_RENDERER_WEBGL))):false;
+    renderer.shadowMap.enabled=!decorative&&!softwareGraphics;renderer.shadowMap.type=THREE.PCFShadowMap;
     const canvas=renderer.domElement;
-    canvas.className='world-scene-canvas';
+    canvas.className='world-scene-canvas';canvas.dataset.graphics=softwareGraphics?'balanced':'high';
     if(decorative){canvas.setAttribute('aria-hidden','true');canvas.setAttribute('role','presentation');canvas.tabIndex=-1;}else{canvas.setAttribute('aria-label',`${worldNames[configRef.current.kind]} interactive 3D scene`);canvas.setAttribute('aria-describedby',descriptionId);canvas.setAttribute('role','img');canvas.tabIndex=0;}
     host.appendChild(canvas);
     const scene=new THREE.Scene();
@@ -119,8 +121,11 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
     controls.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
     const ambient=new THREE.HemisphereLight('#dbe7d4','#1a292f',2.3);scene.add(ambient);
     const sun=new THREE.DirectionalLight('#f0f0d8',3.1);sun.position.set(-15,28,16);scene.add(sun);
-    sun.castShadow=!decorative;sun.shadow.mapSize.set(1024,1024);sun.shadow.autoUpdate=false;sun.shadow.bias=-.00008;scene.add(sun.target);
-    const skyDome=new Sky();skyDome.scale.setScalar(200);skyDome.material.uniforms.sunPosition.value.copy(sun.position).normalize();skyDome.material.uniforms.turbidity.value=3;skyDome.material.uniforms.rayleigh.value=1.6;skyDome.material.uniforms.cloudCoverage.value=.25;skyDome.material.uniforms.cloudScale.value=.0008;scene.add(skyDome);
+    sun.castShadow=renderer.shadowMap.enabled;sun.shadow.mapSize.set(1024,1024);sun.shadow.autoUpdate=false;sun.shadow.bias=-.00008;scene.add(sun.target);
+    const skyDome=new Sky();skyDome.scale.setScalar(200);skyDome.material.uniforms.sunPosition.value.copy(sun.position).normalize();skyDome.material.uniforms.turbidity.value=3;skyDome.material.uniforms.rayleigh.value=1.6;skyDome.material.uniforms.cloudCoverage.value=.25;skyDome.material.uniforms.cloudScale.value=.0008;skyDome.material.toneMapped=false;
+    const atmosphereScene=new THREE.Scene();atmosphereScene.add(skyDome);
+    const atmosphereTarget=new THREE.WebGLCubeRenderTarget(128,{type:THREE.HalfFloatType});
+    const atmosphereCamera=new THREE.CubeCamera(.1,220,atmosphereTarget);let atmosphereReady=false;
     const shadowCenter=new THREE.Vector3(Infinity,Infinity,Infinity);
     const rim=new THREE.DirectionalLight('#92c9cd',1.2);rim.position.set(12,8,-17);scene.add(rim);
     const ocean=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshStandardMaterial({color:SCENE_COLORS.ocean,roughness:.85,metalness:.15}));
@@ -143,9 +148,11 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
       const config=configRef.current;
       const outdoors=config.mode==='world'&&(config.kind==='manhattan'||config.kind==='system'&&!['cpu','internet','finance'].includes(config.blueprint?.archetype??'general'));
       const sky=outdoors?'#bbcbd3':'#18262d';
-      skyDome.visible=outdoors;sun.castShadow=outdoors&&!decorative;shadowCenter.setScalar(Infinity);
+      if(outdoors&&!atmosphereReady){atmosphereCamera.update(renderer,atmosphereScene);atmosphereReady=true;}
+      scene.environment=outdoors&&!softwareGraphics?atmosphereTarget.texture:null;scene.environmentIntensity=.3;
+      sun.castShadow=outdoors&&renderer.shadowMap.enabled;shadowCenter.setScalar(Infinity);
       renderer.toneMappingExposure=outdoors?1.18:1.35;rim.intensity=outdoors?.22:1.2;
-      scene.background=new THREE.Color(sky);scene.fog=new THREE.Fog(sky,outdoors?(walkActive?18:55):65,outdoors?(walkActive?70:110):135);
+      scene.background=outdoors?atmosphereTarget.texture:new THREE.Color(sky);scene.fog=new THREE.Fog(sky,outdoors?(walkActive?18:55):65,outdoors?(walkActive?70:110):135);
       ocean.material.color.set(outdoors?'#344f59':SCENE_COLORS.ocean);grid.visible=!outdoors;
       ambient.color.set(outdoors?'#eef1e7':'#dbe7d4');ambient.groundColor.set(outdoors?'#55635c':'#314149');ambient.intensity=outdoors?1.65:2.3;
       sun.color.set(outdoors?'#fff2d5':'#f0f0d8');sun.intensity=outdoors?2.8:3.1;
@@ -216,11 +223,22 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
       if(!canvas.requestPointerLock){setCapture('drag');return;}
       try{const request=canvas.requestPointerLock();if(request)request.catch(()=>{if(!disposed)setCapture('drag');});}catch{setCapture('drag');}
     };
+    const visibilityRay=new THREE.Ray(),occluder=new THREE.Box3(),intersection=new THREE.Vector3();
+    const canSee=(point:THREE.Vector3)=>{
+      if(!walkActive)return true;
+      const distance=camera.position.distanceToSquared(point),range=configRef.current.kind==='manhattan'?5:18;
+      if(distance>range*range)return false;
+      visibilityRay.origin.copy(camera.position);visibilityRay.direction.copy(point).sub(camera.position).normalize();
+      for(const block of navigation().colliders){
+        occluder.min.set(block.minX,block.minY,block.minZ);occluder.max.set(block.maxX,block.maxY,block.maxZ);
+        if(visibilityRay.intersectBox(occluder,intersection)&&camera.position.distanceToSquared(intersection)<distance-.00001)return false;
+      }
+      return true;
+    };
     const draw=()=>{
       if(disposed||!visible||document.hidden||flatRef.current)return;
       environment.animate(clock,configRef.current.parameters??{});
       data.select(configRef.current.selectedId);
-      skyDome.position.copy(camera.position);
       if(sun.castShadow){
         const city=configRef.current.kind==='manhattan',range=walkActive?(city?4:20):32;
         const center=walkActive?camera.position:controls.target;
@@ -235,7 +253,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
         lastHud=performance.now();
         aimRay.setFromCamera(screenCenter,camera);
         const hit=aimRay.intersectObjects([...data.nodes.values()],false)[0];
-        aimedId=hit?.object.userData.nodeId as string|undefined;
+        aimedId=hit&&canSee(hit.object.position)?hit.object.userData.nodeId as string:undefined;
         const aimLabel=configRef.current.result?.nodes.find(node=>node.id===aimedId)?.label;
         if(aimRef.current)aimRef.current.textContent=aimLabel?`E · Inspect ${aimLabel}`:'Find a glowing node to inspect';
         if(mapPlayerRef.current){const [x,z]=mapPoint(camera.position,configRef.current.kind);mapPlayerRef.current.setAttribute('transform',`translate(${x} ${z}) rotate(${-yaw*180/Math.PI})`);}
@@ -246,7 +264,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
       }
       for(const [id,element] of labelRefs.current){
         const position=data.labels.get(id);
-        if(!position){element.style.display='none';continue;}
+        if(!position||!canSee(data.nodes.get(id)?.position??position)){element.style.display='none';continue;}
         projected.copy(position).project(camera);
         const x=(projected.x*.5+.5)*width,y=(-projected.y*.5+.5)*height;
         element.style.display=projected.z>1||projected.z<0||x<20||x>width-20||y<12||y>height-75?'none':'';
@@ -321,7 +339,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
       const rect=host.getBoundingClientRect();
       const first=width===1;
       width=Math.max(1,rect.width);height=Math.max(1,rect.height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,width<720?1.5:2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,softwareGraphics?.8:width<720?1.5:2));
       renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
       if(first)reset();else refresh();
     };
@@ -358,7 +376,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
       pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
       raycaster.setFromCamera(pointer,camera);
       const hit=raycaster.intersectObjects([...data.nodes.values()],false)[0];
-      if(hit?.object.userData.nodeId)configRef.current.onSelect?.(hit.object.userData.nodeId as string);
+      if(hit?.object.userData.nodeId&&canSee(hit.object.position))configRef.current.onSelect?.(hit.object.userData.nodeId as string);
     };
     const keyDown=(event:KeyboardEvent)=>{
       if(decorative||document.activeElement!==canvas&&document.pointerLockElement!==canvas)return;
@@ -393,7 +411,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
     const pointerLockChange=()=>{clearInput();lookPointer=null;canvas.dataset.pointerLocked=String(document.pointerLockElement===canvas);if(!disposed)setCapture(document.pointerLockElement===canvas?'locked':'ready');refresh();};
     const pointerLockError=()=>{if(!disposed)setCapture('drag');};
     const lost=(event:Event)=>{event.preventDefault();clearInput();releasePointer();setWalking(false);setFallback(true);if(frame)cancelAnimationFrame(frame);frame=0;};
-    const restored=()=>{setFallback(false);refresh();};
+    const restored=()=>{atmosphereReady=false;applyAtmosphere();setFallback(false);refresh();};
     canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',endLook);canvas.addEventListener('blur',blur);
     document.addEventListener('pointermove',pointerMove);document.addEventListener('pointerlockchange',pointerLockChange);document.addEventListener('pointerlockerror',pointerLockError);
     window.addEventListener('keydown',keyDown);window.addEventListener('keyup',keyUp);window.addEventListener('blur',blur);
@@ -406,7 +424,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
       document.removeEventListener('pointermove',pointerMove);document.removeEventListener('pointerlockchange',pointerLockChange);document.removeEventListener('pointerlockerror',pointerLockError);
       window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',blur);
       canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('webglcontextrestored',restored);
-      disposeGroup(environment.group);disposeGroup(data.group);disposeGroup(scene);
+      disposeGroup(environment.group);disposeGroup(data.group);disposeGroup(scene);disposeGroup(atmosphereScene);atmosphereTarget.dispose();
       renderer.renderLists.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
     };
   },[descriptionId,decorative]);

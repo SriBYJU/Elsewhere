@@ -83,7 +83,7 @@ export function buildEnvironment(kind:WorldKind,mode:'world'|'model',blueprint?:
   return {group,animate:()=>undefined};
 }
 
-const cityLocations:Record<string,[number,number,number]>={uptown:[.5,1,16],midtown:[1.4,5.5,1],downtown:[.3,4,-14],brooklyn:[13,.6,-11],queens:[13,.6,6],bronx:[1.5,1,24],jersey:[-14,.6,2],transit:[1.38,.6,10],freight:[-5.4,.6,-7], 'public-space':[-1,.8,8]};
+const cityLocations:Record<string,[number,number,number]>={uptown:[2.43,.31,16],midtown:[2.43,.31,3.3],downtown:[2.43,.31,-14],brooklyn:[13,.6,-11],queens:[13,.6,6],bronx:[1.5,1,24],jersey:[-14,.6,2],transit:[2.175,.31,1.72],freight:[-4.3,.31,-7], 'public-space':[-.55,.31,8.1]};
 
 export function nodePosition(node:WorldNode,kind:WorldKind,mode:'world'|'model') {
   if(kind==='manhattan'&&mode==='world') return new THREE.Vector3(...(cityLocations[node.id]??[node.position[0]*1.2,1,node.position[2]*3]));
@@ -125,13 +125,13 @@ export function buildData(kind:WorldKind,mode:'world'|'model',result?:Simulation
     const geometry=kind==='semiconductor'&&mode==='world'?new THREE.BoxGeometry(size*2,.35+Math.min(3,Math.abs(node.value)/70),size*2):kind==='system'&&mode==='world'?new THREE.SphereGeometry(size,12,10):new THREE.SphereGeometry(size,20,14);
     const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:city?.65:.22,roughness:.36,metalness:.3}));
     mesh.position.copy(position);mesh.userData.nodeId=node.id;group.add(mesh);nodes.set(node.id,mesh);
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(size+ .17,.025,6,40),new THREE.MeshBasicMaterial({color:SCENE_COLORS.lime,transparent:true,opacity:.9}));
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(size+(city?.025:.17),city?.008:.025,6,40),new THREE.MeshBasicMaterial({color:SCENE_COLORS.lime,transparent:true,opacity:.9}));
     ring.position.copy(position);if(city||kind==='semiconductor'&&mode==='world')ring.rotation.x=Math.PI/2;ring.visible=false;group.add(ring);rings.set(node.id,ring);
     if(city){
       const ground=position.clone();ground.y=.2;group.add(line([ground,position],SCENE_COLORS.cyan,.55));
-      const base=new THREE.Mesh(new THREE.RingGeometry(.24,.29,32),new THREE.MeshBasicMaterial({color:SCENE_COLORS.cyan,side:THREE.DoubleSide,transparent:true,opacity:.6}));base.rotation.x=-Math.PI/2;base.position.copy(ground);group.add(base);
+      const base=new THREE.Mesh(new THREE.RingGeometry(.065,.085,32),new THREE.MeshBasicMaterial({color:SCENE_COLORS.cyan,side:THREE.DoubleSide,transparent:true,opacity:.6}));base.rotation.x=-Math.PI/2;base.position.copy(ground);group.add(base);
     }
-    labels.set(node.id,position.clone().add(new THREE.Vector3(0,size+.55,0)));
+    labels.set(node.id,position.clone().add(new THREE.Vector3(0,size+(city?.06:.55),0)));
   });
   return {group,nodes,labels,select:(id)=>{
     rings.forEach((ring,key)=>{ring.visible=key===id;});

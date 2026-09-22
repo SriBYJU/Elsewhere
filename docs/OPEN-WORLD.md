@@ -33,3 +33,5 @@ Additional generated textures:
 `#/play/manhattan` opens directly in full-screen first-person traversal. The home page exposes this through Play the 3D world. `#/explore/manhattan` still opens the simulation workspace. Keyboard and touch navigation include collision, gravity, jump, sprint, drag look, optional pointer capture, node inspection, and a return to the model.
 
 Lighting uses an analytic daylight sky and local cached sun shadows. Architectural and crowd geometry is instanced. The 70 pedestrians have articulated limbs, varied clothing, and a synchronized walking gait. This remains a procedural art direction; asset-authored buildings, detailed interiors, terrain streaming, and richer environmental interactions are future work.
+
+The sky is rendered once into a small cube map rather than evaluating the atmosphere shader on every frame. On hardware graphics it also provides window reflections. Software graphics renderers use a lower pixel density and omit reflections/shadow maps to keep controls responsive. Inspection now checks distance and building occlusion; Manhattan inspection anchors are placed at walking height.
