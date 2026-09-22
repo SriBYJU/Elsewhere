@@ -10,7 +10,7 @@ The street-world concept specifies full-screen exploration, readable building sc
 
 ## Generated asset provenance
 
-- File: `public/textures/higgsfield-brick.png`
+- File: `public/textures/higgsfield-brick.webp`
 - Provider: Higgsfield, GPT Image 2, medium quality, 1024 × 1024.
 - Job: `aee58c25-4d68-4bd3-9f33-5d5f7c916de2`
 - Generated: 2026-09-21 UTC.
@@ -27,3 +27,9 @@ Additional generated textures:
 - `public/textures/higgsfield-asphalt.webp`: Higgsfield GPT Image 2, job `682f512a-add5-4545-a386-167d5c5e1192`, 1024 × 1024. Photorealistic tileable unmarked asphalt, diffuse lighting, subtle aggregate and wear.
 - `public/textures/higgsfield-forest.webp`: Higgsfield GPT Image 2, job `5e6b0726-96bc-400a-ba1f-dbd8049dd38f`, 1024 × 1024. Photorealistic tileable temperate forest ground with leaves, soil, moss, and small twigs.
 - All three original PNGs were converted to WebP quality 86 at their original resolution: total download size fell from 8.2 MB to 1.18 MB. Brick runtime filename is `higgsfield-brick.webp`. Original PNG assets are preserved beside the repository in `../Elsewhere-texture-sources`.
+
+## Playable release
+
+`#/play/manhattan` opens directly in full-screen first-person traversal. The home page exposes this through Play the 3D world. `#/explore/manhattan` still opens the simulation workspace. Keyboard and touch navigation include collision, gravity, jump, sprint, drag look, optional pointer capture, node inspection, and a return to the model.
+
+Lighting uses an analytic daylight sky and local cached sun shadows. Architectural and crowd geometry is instanced. The 70 pedestrians have articulated limbs, varied clothing, and a synchronized walking gait. This remains a procedural art direction; asset-authored buildings, detailed interiors, terrain streaming, and richer environmental interactions are future work.

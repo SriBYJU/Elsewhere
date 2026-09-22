@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Crosshair, Focus, Footprints, Home, List, Minus, Pause, Play, Plus, RotateCcw, ScanEye, X } from 'lucide-react';
 import * as THREE from 'three';
+import { Sky } from 'three/addons/objects/Sky.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { Parameters, SimulationResult, SystemBlueprint, WorldKind } from '../core/types';
 import { buildData, buildEnvironment, disposeGroup, nodePosition, SCENE_COLORS } from './scene/worldGeometry';
@@ -19,6 +20,7 @@ export interface WorldSceneProps {
   focusId?: string;
   className?: string;
   decorative?: boolean;
+  initialWalking?: boolean;
 }
 type MoveDirection='forward'|'back'|'left'|'right';
 type Navigation = {spawn:[number,number,number];lookAt:[number,number,number];bounds:{minX:number;maxX:number;minZ:number;maxZ:number};floor:number;eyeHeight:number;radius:number;speed:number;colliders:{minX:number;maxX:number;minZ:number;maxZ:number;minY:number;maxY:number}[];land?:[number,number][]};
@@ -60,7 +62,7 @@ function SvgFallback({kind,result,mode,onSelect,selectedId}:WorldSceneProps) {
   </svg>;
 }
 
-export default function WorldScene({kind,result,parameters,blueprint,selectedId,onSelect,mode='world',reducedMotion=false,focusId,className='',decorative=false}:WorldSceneProps) {
+export default function WorldScene({kind,result,parameters,blueprint,selectedId,onSelect,mode='world',reducedMotion=false,focusId,className='',decorative=false,initialWalking=false}:WorldSceneProps) {
   const hostRef=useRef<HTMLDivElement>(null);
   const labelRefs=useRef(new Map<string,HTMLButtonElement>());
   const handleRef=useRef<SceneHandle|null>(null);
@@ -69,7 +71,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
   const [fallback,setFallback]=useState(false);
   const [flatView,setFlatView]=useState(false);
   const [paused,setPaused]=useState(false);
-  const [walking,setWalking]=useState(false);
+  const [walking,setWalking]=useState(initialWalking);
   const [capture,setCapture]=useState<'ready'|'locked'|'drag'>('ready');
   const [visitedCount,setVisitedCount]=useState(0);
   const visitedRef=useRef(new Set<string>());
@@ -99,7 +101,8 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
     renderer.setClearColor(SCENE_COLORS.ocean);
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure=1.35;
+    renderer.toneMappingExposure=1.05;
+    renderer.shadowMap.enabled=!decorative;renderer.shadowMap.type=THREE.PCFShadowMap;
     const canvas=renderer.domElement;
     canvas.className='world-scene-canvas';
     if(decorative){canvas.setAttribute('aria-hidden','true');canvas.setAttribute('role','presentation');canvas.tabIndex=-1;}else{canvas.setAttribute('aria-label',`${worldNames[configRef.current.kind]} interactive 3D scene`);canvas.setAttribute('aria-describedby',descriptionId);canvas.setAttribute('role','img');canvas.tabIndex=0;}
@@ -116,6 +119,9 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
     controls.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
     const ambient=new THREE.HemisphereLight('#dbe7d4','#1a292f',2.3);scene.add(ambient);
     const sun=new THREE.DirectionalLight('#f0f0d8',3.1);sun.position.set(-15,28,16);scene.add(sun);
+    sun.castShadow=!decorative;sun.shadow.mapSize.set(1024,1024);sun.shadow.autoUpdate=false;sun.shadow.bias=-.00008;scene.add(sun.target);
+    const skyDome=new Sky();skyDome.scale.setScalar(200);skyDome.material.uniforms.sunPosition.value.copy(sun.position).normalize();skyDome.material.uniforms.turbidity.value=3;skyDome.material.uniforms.rayleigh.value=1.6;skyDome.material.uniforms.cloudCoverage.value=.25;skyDome.material.uniforms.cloudScale.value=.0008;scene.add(skyDome);
+    const shadowCenter=new THREE.Vector3(Infinity,Infinity,Infinity);
     const rim=new THREE.DirectionalLight('#92c9cd',1.2);rim.position.set(12,8,-17);scene.add(rim);
     const ocean=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshStandardMaterial({color:SCENE_COLORS.ocean,roughness:.85,metalness:.15}));
     ocean.rotation.x=-Math.PI/2;ocean.position.y=-.7;scene.add(ocean);
@@ -136,11 +142,13 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
     const applyAtmosphere=()=>{
       const config=configRef.current;
       const outdoors=config.mode==='world'&&(config.kind==='manhattan'||config.kind==='system'&&!['cpu','internet','finance'].includes(config.blueprint?.archetype??'general'));
-      const sky=outdoors?'#a7b9bf':'#18262d';
+      const sky=outdoors?'#bbcbd3':'#18262d';
+      skyDome.visible=outdoors;sun.castShadow=outdoors&&!decorative;shadowCenter.setScalar(Infinity);
+      renderer.toneMappingExposure=outdoors?1.18:1.35;rim.intensity=outdoors?.22:1.2;
       scene.background=new THREE.Color(sky);scene.fog=new THREE.Fog(sky,outdoors?(walkActive?18:55):65,outdoors?(walkActive?70:110):135);
       ocean.material.color.set(outdoors?'#344f59':SCENE_COLORS.ocean);grid.visible=!outdoors;
-      ambient.color.set(outdoors?'#eef1e7':'#dbe7d4');ambient.groundColor.set(outdoors?'#55635c':'#314149');ambient.intensity=outdoors?2:2.3;
-      sun.color.set(outdoors?'#fff2d5':'#f0f0d8');sun.intensity=outdoors?2.5:3.1;
+      ambient.color.set(outdoors?'#eef1e7':'#dbe7d4');ambient.groundColor.set(outdoors?'#55635c':'#314149');ambient.intensity=outdoors?1.65:2.3;
+      sun.color.set(outdoors?'#fff2d5':'#f0f0d8');sun.intensity=outdoors?2.8:3.1;
     };
     applyAtmosphere();
     const navigation=():Navigation=>(environment as SceneEnvironment&{navigation?:Navigation}).navigation??{
@@ -172,6 +180,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
     };
     const move=(direction:MoveDirection,held:boolean)=>{if(held)touchMoves.add(direction);else touchMoves.delete(direction);refresh();};
     const updatePlayer=(elapsed:number)=>{
+      if(elapsed<=0)return;
       const nav=navigation();
       const forward=Number(pressed.has('w')||pressed.has('arrowup')||touchMoves.has('forward'))-Number(pressed.has('s')||pressed.has('arrowdown')||touchMoves.has('back'));
       const sideways=Number(pressed.has('d')||pressed.has('arrowright')||touchMoves.has('right'))-Number(pressed.has('a')||pressed.has('arrowleft')||touchMoves.has('left'));
@@ -211,7 +220,17 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
       if(disposed||!visible||document.hidden||flatRef.current)return;
       environment.animate(clock,configRef.current.parameters??{});
       data.select(configRef.current.selectedId);
+      skyDome.position.copy(camera.position);
+      if(sun.castShadow){
+        const city=configRef.current.kind==='manhattan',range=walkActive?(city?4:20):32;
+        const center=walkActive?camera.position:controls.target;
+        if(shadowCenter.distanceToSquared(center)>(city?.2:1)**2){
+          shadowCenter.copy(center);sun.target.position.set(center.x,0,center.z);sun.position.copy(sun.target.position).add(new THREE.Vector3(-15,28,16));
+          Object.assign(sun.shadow.camera,{left:-range,right:range,top:range,bottom:-range,near:1,far:80});sun.shadow.camera.updateProjectionMatrix();sun.shadow.normalBias=city?.001:.015;sun.shadow.needsUpdate=true;
+        }
+      }
       renderer.render(scene,camera);
+      if(walkActive){canvas.dataset.position=`${camera.position.x.toFixed(4)},${camera.position.y.toFixed(4)},${camera.position.z.toFixed(4)}`;canvas.dataset.grounded=String(grounded);canvas.dataset.heading=yaw.toFixed(4);}
       if(walkActive&&performance.now()-lastHud>75){
         lastHud=performance.now();
         aimRay.setFromCamera(screenCenter,camera);
@@ -223,7 +242,7 @@ export default function WorldScene({kind,result,parameters,blueprint,selectedId,
         if(coordinatesRef.current)coordinatesRef.current.textContent=`${camera.position.x.toFixed(1)} / ${camera.position.z.toFixed(1)}`;
         if(headingRef.current)headingRef.current.textContent=`${Math.round(((-yaw*180/Math.PI)%360+360)%360).toString().padStart(3,'0')}°`;
         if(motionRef.current)motionRef.current.textContent=!grounded?'AIRBORNE':pressed.has('shift')?'SPRINTING':'ON FOOT';
-        canvas.dataset.position=`${camera.position.x.toFixed(4)},${camera.position.y.toFixed(4)},${camera.position.z.toFixed(4)}`;canvas.dataset.grounded=String(grounded);canvas.dataset.heading=yaw.toFixed(4);
+
       }
       for(const [id,element] of labelRefs.current){
         const position=data.labels.get(id);

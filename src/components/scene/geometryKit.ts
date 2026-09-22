@@ -22,6 +22,7 @@ export function batch(group:THREE.Group,geometry:THREE.BufferGeometry,instances:
   if(!instances.length){geometry.dispose();return null;}
   const material=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:options.roughness??.86,metalness:options.metalness??.06,...(options.emissive?{emissive:color,emissiveIntensity:options.emissive}: {})});
   const mesh=new THREE.InstancedMesh(geometry,material,instances.length);
+  mesh.castShadow=instances.some(instance=>instance.scale[1]>.25);mesh.receiveShadow=true;
   const dummy=new THREE.Object3D();
   instances.forEach((instance,index)=>{
     dummy.position.set(...instance.position);dummy.scale.set(...instance.scale);dummy.rotation.set(...(instance.rotation??[0,0,0]));dummy.updateMatrix();
@@ -34,7 +35,7 @@ export function boxes(group:THREE.Group,instances:Instance[],color:string,option
 export function box(position:Instance['position'],scale:Instance['scale'],color?:string,rotation?:Instance['rotation']):Instance{return{position,scale,color,rotation};}
 export function solid(group:THREE.Group,geometry:THREE.BufferGeometry,color:string,position:[number,number,number],options:{roughness?:number;metalness?:number;emissive?:number}={}) {
   const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color,roughness:options.roughness??.8,metalness:options.metalness??.05,emissive:color,emissiveIntensity:options.emissive??0}));
-  mesh.position.set(...position);group.add(mesh);return mesh;
+  mesh.receiveShadow=true;mesh.position.set(...position);group.add(mesh);return mesh;
 }
 export function polyline(group:THREE.Group,points:THREE.Vector3[],color:string,opacity=.7) {
   const result=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(result);return result;

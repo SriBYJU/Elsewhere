@@ -26,3 +26,5 @@
 .world-canvas-area .world-scene-minimap{top:134px}
 .explorer--immersive .world-scene-minimap{top:86px}
 @media(max-width:719px){.world-canvas-area .world-scene-objective{top:77px;width:180px}.world-canvas-area .world-scene-minimap{top:130px}.explorer--immersive .world-scene-minimap{top:130px}.world-canvas-area .world-scene-compass{top:230px}}
+
+.hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px}.hero-actions .play-world-link{display:inline-flex;align-items:center;gap:12px;font-size:13px;pointer-events:auto}.world-release-note{font:8px var(--mono);color:var(--accent);letter-spacing:.07em}.hero-actions .text-action{flex-basis:100%}

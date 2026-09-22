@@ -1,43 +1,38 @@
 # Elsewhere continuation state
 
-Updated: 2026-09-20
+Updated: 2026-09-21
 
-## Product state
+## Product direction
 
-- React 19, TypeScript, Vite, Motion, Three.js, Zod, Vitest, Playwright, and Axe.
-- Authored Manhattan, XOR neural-network, and semiconductor worlds.
-- Universal compiler for company, finance, supply-chain, CPU, internet, science, history, energy, ecosystem, and general systems.
-- Pipeline: deterministic authored match → bounded Wikipedia context for other questions → disclosed system archetype → local deterministic simulation → interactive world.
-- Overview and Enter World navigation; keyboard, touch, node selection, model/data views, and 2D fallback.
-- Controls, timeline, causal ripple, immutable baseline, branching/comparison, Source DNA, X-ray, Why, Challenge, local save/recovery, share, and `.elsewhere` import/export.
-- Strict generated-blueprint validation; imported data cannot execute code.
-- Static GitHub Pages workflow and zero mandatory recurring-cost architecture.
+Elsewhere is global and domain-general: Question → Research → Model → Simulation → Interactive World. The requested visual direction is a detailed, playable open world comparable in ambition to Spider-Man. The current procedural browser release is an intermediate prototype; it does not meet AAA fidelity or recreate real locations exactly.
 
-## Verification
+## Current implementation
 
-- `npm run check`
-- `npm run test:e2e`
-- `node scripts/preserve-checks.mjs`
-- `npm audit --audit-level=high` previously returned zero known vulnerabilities; a later repeat could not reach the npm audit endpoint in the restricted environment.
-- Browser QA covers desktop and iPhone-sized projects. Visual regression remains inconclusive until approved baselines are committed.
+- React, TypeScript, Vite, Three.js; static GitHub Pages with no mandatory paid inference.
+- Universal compiler covers company, finance, supply-chain, CPU, internet, science, history, energy, ecosystem, and general systems. Historical time expressions take precedence over present-day place matches.
+- `#/play/manhattan` opens the full-screen street-level game view; `#/explore/manhattan` opens the simulation workspace. Home has a prominent Play the 3D world link.
+- Instanced city buildings, windows, roof equipment, sidewalks, crossings, parks, traffic, street fixtures and 70 articulated pedestrians. Daylight sky and cached local sun shadows.
+- Keyboard/touch traversal, wall collision and sliding, gravity, jump, sprint, pointer capture, drag look, minimap and inspection. Escape first releases captured mouse; a subsequent Escape returns to the workspace.
+- Context-sensitive historical/landscape environments; Virginia's historical setting no longer falls through to a generic six-node board or a Roman town.
+- Generated Higgsfield surface textures (brick, asphalt, forest) total 1.18 MB as WebP. Figma design and asset provenance are in `docs/OPEN-WORLD.md`.
+- Simulation controls, branches, comparison, evidence, X-ray, Why, Challenge, share and import/export remain available.
+- Cascade routing and checkpoint/recovery implementation is documented in `docs/CASCADE.md`.
 
-## Repository and deployment
+## Verification and release
 
-- Remote: `https://github.com/SriBYJU/Elsewhere.git`
-- Stable foundation already pushed: `8234619e75f61cf19dc9b539c4bf769f0388bfe0`
-- Pages uses GitHub Actions and is live at `https://sribyju.github.io/Elsewhere/`.
-- Deployment workflow run `35534075822` completed both build and deploy jobs successfully for commit `7bf8b77ecb5bc9a97aa629ac144f3b3f6c5c5d1c`.
-- Live HTML and its hashed production JavaScript asset returned HTTP 200 with the `/Elsewhere/` base path on 2026-09-20.
-- The full public-site Playwright run completed with 9 passing tests and 1 intentional duplicate visual-project skip across desktop and mobile profiles.
+- Remote: `https://github.com/SriBYJU/Elsewhere.git`; branch `main`.
+- Live: `https://sribyju.github.io/Elsewhere/`.
+- First playable environment checkpoint: `4444b20c7dd1ad810d33ebed114b033baebef545`, successful Pages workflow `35640015319`. Public HTML and texture verified HTTP 200.
+- `npm run check` passes: typecheck, lint, 39 unit tests and production build.
+- Browser suite includes desktop Chromium and iPhone-sized WebKit. New traversal tests cover motion, stationary jumping, collision, Escape capture, held on-screen movement and release, and menu placement.
+- `release.json` publishes the deployed Git SHA and build time; `.explorer[data-release]` identifies the loaded runtime. Check both to diagnose stale deployments.
+- Local headless Chromium's software graphics can take much longer to compile shaders than WebKit; traversal tests use bounded longer timeouts.
+- `node scripts/preserve-checks.mjs` tests the scoped Git preservation utility; it is separate from the browser suite.
 
-## Provenance
+## Remaining fidelity work
 
-- Creator photo: CapitalMastery `assets/founder-shriyan.jpg`, source commit `bdb84064d2ee513b5d4e4c3077e1667065fc8777`, blob `e39061c64897f0c4589574b31980e3472ccadd96`.
-- Cascade inspected revision: `80c3dcd89d6de5d6f34df1efd3fa52c67a4072c4`; see `docs/CASCADE.md`.
-
-## Next responsible extensions
-
-- Replace generic archetype coefficients with reviewed domain packs when expert evidence exists.
-- Add alternative bounded research providers with provenance and caching contracts.
-- Add collision/navigation meshes and richer world-specific spatial assets without changing the simulation's evidence labels.
-- Establish visual baselines only after a human approves the intended desktop, tablet, and mobile renders.
+- Authored high-detail building and vegetation assets, interiors, richer environmental actions, and geographic/terrain streaming.
+- Accurate scene-to-model spatial anchors and visibility-aware inspection.
+- Expand physical environment packs for domains still represented schematically.
+- Reviewed domain evidence and calibrated coefficients; visual detail is not evidence of accuracy.
+- Establish approved visual baselines; screenshots alone are not visual-regression approval.

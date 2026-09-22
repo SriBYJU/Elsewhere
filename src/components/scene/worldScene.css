@@ -52,3 +52,5 @@
 @media(pointer:coarse){.world-scene-touch{display:flex}.world-scene-capture{display:none}.world-scene--walking .world-scene-walk-hud{left:16px;bottom:121px;padding:7px 10px}.world-scene--walking .world-scene-walk-hud>small,.world-scene-walk-hud b{display:none}.world-scene--walking .world-scene-tools{bottom:125px}.world-scene-interact{bottom:181px}}
 @media(max-height:550px){.world-scene-objective{top:12px;padding:9px 12px}.world-scene-objective p,.world-scene-objective-progress,.world-scene-objective small{display:none}.world-scene-objective strong{font-size:13px;margin-top:5px}.world-scene-minimap{width:80px;top:12px}.world-scene-compass{display:none}.world-scene-interact{bottom:115px}.world-scene-walk-hud>small{display:none}}
 @media(prefers-reduced-motion:reduce){.world-scene button,.world-scene-label{transition:none}}
+
+@media(max-width:719px){.world-scene--walking .world-scene-node-list{max-height:150px}}
